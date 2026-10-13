@@ -73,6 +73,9 @@ class Meter(object):
 
         T = numSamples / self.rate # length of the input in seconds
         numBlocks = int(np.round(((T - T_g) / (T_g * step)))+1) # total number of gated blocks (see end of eq. 3)
+        # Discard a trailing block whose sample endpoint exceeds the input.
+        if int(T_g * ((numBlocks - 1) * step + 1) * self.rate) > numSamples:
+            numBlocks -= 1
         j_range = np.arange(0, numBlocks) # indexed list of total blocks
         z = np.zeros(shape=(numChannels,numBlocks)) # instantiate array - trasponse of input
 
