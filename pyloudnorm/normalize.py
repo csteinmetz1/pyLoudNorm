@@ -5,7 +5,8 @@ import numpy as np
 def peak(data, target):
     """ Peak normalize a signal.
     
-    Normalize an input signal to a user specifed peak amplitude.   
+    Normalize an input signal to a user specifed peak amplitude.
+    Silent input is returned unchanged.
 
     Params
     -------
@@ -21,6 +22,8 @@ def peak(data, target):
     """
     # find the amplitude of the largest peak
     current_peak = np.max(np.abs(data))
+    if current_peak == 0:
+        return data.copy()
 
     # calculate the gain needed to scale to the desired peak level
     gain = np.power(10.0, target/20.0) / current_peak
@@ -35,7 +38,8 @@ def peak(data, target):
 def loudness(data, input_loudness, target_loudness):
     """ Loudness normalize a signal.
     
-    Normalize an input signal to a user loudness in dB LKFS.   
+    Normalize an input signal to a user loudness in dB LKFS.
+    Silent input with a measured loudness of -inf is returned unchanged.
 
     Params
     -------
@@ -51,6 +55,9 @@ def loudness(data, input_loudness, target_loudness):
     output : ndarray
         Loudness normalized output data.
     """    
+    if np.isneginf(input_loudness) and data.size and not np.any(data):
+        return data.copy()
+
     # calculate the gain needed to scale to the desired loudness level
     delta_loudness = target_loudness - input_loudness
     gain = np.power(10.0, delta_loudness/20.0)
