@@ -1,5 +1,6 @@
 import os
 import pyloudnorm as pyln
+import pytest
 import soundfile as sf
 import numpy as np
 
@@ -10,6 +11,26 @@ def test_integrated_loudness():
 	loudness = meter.integrated_loudness(data)
 
 	assert np.isclose(loudness, -3.0523438444331137)
+
+@pytest.mark.parametrize("sample_rate", [1000, 7999])
+def test_low_sample_rate_rejected(sample_rate):
+	frequency = 997
+	block_size = 0.4
+	signal = np.arange(sample_rate * block_size, dtype=np.float32)
+	signal = np.sin(2 * np.pi * frequency * (signal / sample_rate)).astype(np.float32)
+	signal = signal / 100000
+	meter = pyln.Meter(rate=sample_rate, block_size=block_size, filter_class="DeMan")
+
+	with pytest.raises(ValueError, match="Sample rate must be at least 8000 Hz"):
+		meter.integrated_loudness(signal)
+
+def test_minimum_sample_rate_supported():
+	sample_rate = 8000
+	time = np.arange(sample_rate, dtype=np.float32) / sample_rate
+	signal = 0.5 * np.sin(2 * np.pi * 440 * time)
+	meter = pyln.Meter(rate=sample_rate)
+
+	assert np.isfinite(meter.integrated_loudness(signal))
 
 def test_peak_normalize():
 

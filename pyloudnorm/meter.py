@@ -11,7 +11,7 @@ class Meter(object):
     Parameters
     ----------
     rate : float
-        Sampling rate in Hz.
+        Sampling rate in Hz. Must be at least 8000 Hz.
     filter_class : str
         Class of weighting filter used.
         - 'K-weighting'
@@ -50,7 +50,15 @@ class Meter(object):
         -------
         LUFS : float
             Integrated gated loudness of the input measured in dB LUFS.
+
+        Raises
+        ------
+        ValueError
+            If the meter's sample rate is below 8000 Hz.
         """
+        if self.rate < 8000:
+            raise ValueError("Sample rate must be at least 8000 Hz.")
+
         input_data = data.copy()
         util.valid_audio(input_data, self.rate, self.block_size)
 
